@@ -1,66 +1,115 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Window = Rayfield:CreateWindow({
-    Name = "Qxior Dupe",
-    Icon = 0,
-    LoadingTitle = "Dupe",
-    LoadingSubtitle = "by Qxior",
-    Theme = "Default",
-    DisableRayfieldPrompts = false,
-    DisableBuildWarnings = false,
-    ConfigurationSaving = {Enabled = false, FolderName = nil, FileName = ""},
-    Discord = {Enabled = false, Invite = "noinvitelink", RememberJoins = true},
-    KeySystem = false,
-    KeySettings = {
-        Title = "Untitled",
-        Subtitle = "Key System",
-        Note = "No method of obtaining the key is provided",
-        FileName = "Key",
-        SaveKey = true,
-        GrabKeyFromSite = false,
-        Key = {""}
-    }
-})
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
-local Tab = Window:CreateTab("Main", 4483362458) -- Title, Image
+-- Main GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AgeChangerGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
 
-local m = 2
+-- Toggle Button
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0, 65, 0, 65)
+toggleButton.Position = UDim2.new(0, 10, 0, 10)
+toggleButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+toggleButton.Text = "â˜°"
+toggleButton.TextColor3 = Color3.new(1, 1, 1)
+toggleButton.Font = Enum.Font.SourceSansBold
+toggleButton.TextSize = 30
+toggleButton.Parent = screenGui
+toggleButton.Draggable = true
+toggleButton.Active = true
 
-local Button = Tab:CreateButton({
-    Name = "Dupe Equipped Item",
-    Callback = function()
-        local player = game.Players.LocalPlayer
-        local character = player.Character
-        if character then
-            local tool = character:FindFirstChildOfClass("Tool")
-            if tool and not tostring(tool):match("Seed") then
-                for i = 1, m do
-                    local cloneTool = tool:Clone()
-                    cloneTool.Parent = player.Backpack
-                end
-            end
-        end
-    end,
-})
+-- Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 220, 0, 150)
+mainFrame.Position = UDim2.new(0, 80, 0, 10)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
+mainFrame.Visible = false
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
 
-local Slider = Tab:CreateSlider({
-    Name = "Multiplier",
-    Range = {2, 100},
-    Increment = 1,
-    Suffix = "",
-    CurrentValue = 2,
-    Flag = "a",
-    Callback = function(Value)
-        m = Value
-    end,
-})
+-- Title
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 30)
+titleLabel.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+titleLabel.Text = "AUTO 50 AGE"
+titleLabel.TextColor3 = Color3.new(1, 0, 0)
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextSize = 20
+titleLabel.Parent = mainFrame
 
-local Button = Tab:CreateButton({
-    Name = "Dupe Seeds",
-    Callback = function()
-        for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-            if tostring(v):match("[X%d+]") and tostring(v):match("Seed") then
-                v.Name = tostring(v):gsub(tostring(v):match("(%d+)"), tonumber(tostring(v):match("(%d+)")) * m)
-            end
-        end
-    end,
-})
+-- Button
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 190, 0, 40)
+button.Position = UDim2.new(0, 15, 0, 40)
+button.Text = "Set Equipped Age to 50"
+button.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+button.TextColor3 = Color3.new(1, 1, 1)
+button.Font = Enum.Font.SourceSansBold
+button.TextSize = 16
+button.Parent = mainFrame
+
+-- Countdown Label
+local countdownLabel = Instance.new("TextLabel")
+countdownLabel.Size = UDim2.new(0, 190, 0, 25)
+countdownLabel.Position = UDim2.new(0, 15, 0, 85)
+countdownLabel.BackgroundTransparency = 1
+countdownLabel.Text = ""
+countdownLabel.TextColor3 = Color3.new(1, 0, 0)
+countdownLabel.Font = Enum.Font.SourceSansBold
+countdownLabel.TextSize = 18
+countdownLabel.Parent = mainFrame
+
+-- Made by vcdebt
+local creditLabel = Instance.new("TextLabel")
+creditLabel.Size = UDim2.new(1, 0, 0, 20)
+creditLabel.Position = UDim2.new(0, 0, 1, -20)
+creditLabel.BackgroundTransparency = 1
+creditLabel.Text = "Made by vcdebt"
+creditLabel.TextColor3 = Color3.new(1, 0, 0)
+creditLabel.Font = Enum.Font.SourceSansBold
+creditLabel.TextSize = 16
+creditLabel.Parent = mainFrame
+
+-- Toggle visibility
+toggleButton.MouseButton1Click:Connect(function()
+	mainFrame.Visible = not mainFrame.Visible
+end)
+
+-- Function to change equipped pet age
+local function updateEquippedAge()
+	local found = false
+	for _, desc in pairs(playerGui:GetDescendants()) do
+		if desc:IsA("TextLabel") and desc.Text:match("%[Age %d+%]") then
+			if not desc.Text:find("%[Age 50%]") then
+				desc.Text = desc.Text:gsub("%[Age %d+%]", "[Age 50]")
+				found = true
+				break
+			end
+		end
+	end
+	if not found then
+		warn("No new equipped pet found to change.")
+	end
+end
+
+-- Countdown then change pet
+button.MouseButton1Click:Connect(function()
+	button.Visible = false
+	countdownLabel.Visible = true
+
+	for i = 30, 0, -1 do
+		countdownLabel.Text = "Changing in: " .. i .. "s"
+		task.wait(0.1)
+	end
+
+	countdownLabel.Text = "Changed!"
+	updateEquippedAge()
+	task.wait(1)
+	countdownLabel.Text = ""
+	button.Visible = true
+end)
